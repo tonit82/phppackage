@@ -4,35 +4,32 @@ namespace ToniT82\PhpPackage\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ToniT82\PhpPackage\JokeFactory;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Request;
 
 class JokeFactoryTest extends TestCase
 {
     /** @test */
     public function returns_a_random_joke () 
     {
-        $jokes = new JokeFactory([
-            'This is awesome hahaha'
+        $mock = new MockHandler([
+
+            new Response(200, [], '{ "type": "success", "value": { "id": 34, "joke": "The opening scene of the movie &quot;Saving Private Ryan&quot; is loosely based on games of dodgeball Chuck Norris played in second grade.", "categories": [] } }')
+
         ]);
 
-        $joke = $jokes->getRandomJoke();
+        $handler = HandlerStack::create($mock);
 
-        $this->assertSame('This is awesome hahaha', $joke);
-    }
+        $client = new Client(['handler' => $handler]);
 
-    /** @test */
-    public function return_predifined_jokes()
-    {
-        $chuckNorriJokes = [
-            'Chuck Norris does not wear a condom. Because there is no such thing as protection from Chuck Norris.',
-            'Chuck Norris\' tears cure cancer. Too bad he has never cried.',
-            'If you can see Chuck Norris, he can see you. If you can\'t see Chuck Norris you may be only seconds away from death.'
-        ];
-
-        $jokes = new JokeFactory($chuckNorriJokes);
+        $jokes = new JokeFactory($client);
 
         $joke = $jokes->getRandomJoke();
 
-        $this->assertContains($joke, $chuckNorriJokes);
+        $this->assertSame('The opening scene of the movie &quot;Saving Private Ryan&quot; is loosely based on games of dodgeball Chuck Norris played in second grade.', $joke);
     }
 
 }
